@@ -63,9 +63,16 @@ export default function HomePage() {
   }, [loadProducts]);
 
   async function loadCategories() {
+    console.log('Loading categories...');
     const fetchedCategories = await getCategories();
+    console.log('Fetched categories:', fetchedCategories);
     setCategories(fetchedCategories);
   }
+
+  // Add console log to see categories state
+  useEffect(() => {
+    console.log('Current categories:', categories);
+  }, [categories]);
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -185,11 +192,11 @@ Product Image: ${selectedProduct.image_urls[0] || ''}${
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Category Filter */}
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-3 justify-center">
+        <div className="mb-6 overflow-x-auto pb-4">
+          <div className="flex flex-nowrap gap-3 min-w-min px-2">
             <button
               onClick={() => handleCategoryChange('')}
-              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all transform hover:scale-105 ${
+              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all transform hover:scale-105 whitespace-nowrap ${
                 selectedCategory === ''
                   ? 'bg-[#ff9800] text-white shadow-lg'
                   : 'bg-white text-gray-700 hover:bg-[#ff9800]/10 shadow'
@@ -201,7 +208,7 @@ Product Image: ${selectedProduct.image_urls[0] || ''}${
               <button
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all transform hover:scale-105 ${
+                className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all transform hover:scale-105 whitespace-nowrap ${
                   selectedCategory === category.id
                     ? 'bg-[#ff9800] text-white shadow-lg'
                     : 'bg-white text-gray-700 hover:bg-[#ff9800]/10 shadow'

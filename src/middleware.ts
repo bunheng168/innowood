@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-  console.log('Middleware running for path:', req.nextUrl.pathname);
-  
   const res = NextResponse.next();
   
   const supabase = createServerClient(
@@ -15,14 +13,14 @@ export async function middleware(req: NextRequest) {
         get(name: string) {
           return req.cookies.get(name)?.value;
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: Record<string, unknown>) {
           res.cookies.set({
             name,
             value,
             ...options,
           });
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: Record<string, unknown>) {
           res.cookies.set({
             name,
             value: '',
@@ -33,40 +31,27 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // Check if we're on an admin route
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    console.log('Checking admin route access');
-    
-    // Skip auth check for login page
-    if (req.nextUrl.pathname === '/admin/login') {
-      console.log('Allowing access to login page');
-      return res;
-    }
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session check result:', session ? 'Session exists' : 'No session');
+  // If there's no session and the user is trying to access admin routes
+  if (!session && req.nextUrl.pathname.startsWith('/admin')) {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = '/admin/login';
+    return NextResponse.redirect(redirectUrl);
+  }
 
-      // If no session, redirect to login
-      if (!session) {
-        console.log('No session found, redirecting to login');
-        const redirectUrl = new URL('/admin/login', req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
-
-      console.log('User authenticated, allowing access');
-      return res;
-    } catch (error) {
-      console.error('Error checking session:', error);
-      // On error, redirect to login for safety
-      const redirectUrl = new URL('/admin/login', req.url);
-      return NextResponse.redirect(redirectUrl);
-    }
+  // If there's a session and the user is on the login page
+  if (session && req.nextUrl.pathname === '/admin/login') {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = '/admin/products';
+    return NextResponse.redirect(redirectUrl);
   }
 
   return res;
 }
 
 export const config = {
-  matcher: '/admin/:path*',
-} 
+  matcher: ['/admin/:path*'],
+}; 

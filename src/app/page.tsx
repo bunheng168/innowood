@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Product, Category } from '@/types/product';
 import { getFilteredProducts, getCategories } from '@/lib/supabaseUtils';
@@ -41,16 +41,7 @@ export default function HomePage() {
     loadCategories();
   }, []);
 
-  useEffect(() => {
-    loadProducts();
-  }, [selectedCategory, page]);
-
-  async function loadCategories() {
-    const fetchedCategories = await getCategories();
-    setCategories(fetchedCategories);
-  }
-
-  async function loadProducts() {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       const { products: fetchedProducts, total } = await getFilteredProducts({
@@ -65,6 +56,15 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
+  }, [selectedCategory, page, productsPerPage]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  async function loadCategories() {
+    const fetchedCategories = await getCategories();
+    setCategories(fetchedCategories);
   }
 
   const handleCategoryChange = (categoryId: string) => {
@@ -110,7 +110,7 @@ export default function HomePage() {
       const fileName = `reference-images/${timestamp}-${file.name}`;
 
       // Upload the file to Supabase storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('innowood-image')
         .upload(fileName, file);
 
@@ -312,10 +312,12 @@ Product Image: ${selectedProduct.image_urls[0] || ''}${
                       </button>
                     ) : (
                       <div className="relative rounded-lg overflow-hidden">
-                        <img 
-                          src={customization.attachedImagePreview} 
-                          alt="Reference preview" 
+                        <Image
+                          src={customization.attachedImagePreview}
+                          alt="Reference preview"
                           className="w-full h-48 object-cover"
+                          width={400}
+                          height={192}
                         />
                         <button
                           onClick={handleRemoveImage}
@@ -404,11 +406,16 @@ Product Image: ${selectedProduct.image_urls[0] || ''}${
                   </svg>
                 </button>
 
-                <img
-                  src={selectedProduct.image_urls[currentImageIndex]}
-                  alt={selectedProduct.name}
-                  className="max-h-screen max-w-full object-contain"
-                />
+                <div className="relative">
+                  <Image
+                    src={selectedProduct.image_urls[currentImageIndex]}
+                    alt={selectedProduct.name}
+                    className="max-h-screen max-w-full object-contain"
+                    width={1920}
+                    height={1080}
+                    priority
+                  />
+                </div>
                 
                 {/* Navigation Arrows */}
                 {selectedProduct.image_urls.length > 1 && (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Product, Category } from '@/types/product';
 import { getProducts, deleteProduct, uploadProductImages, addProduct, updateProduct, getCategories } from '@/lib/supabaseUtils';
+import Image from 'next/image';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -260,10 +261,12 @@ export default function AdminProductsPage() {
                 <div className="mt-4 grid grid-cols-3 gap-4">
                   {previewUrls.map((url, index) => (
                     <div key={index} className="relative">
-                      <img
+                      <Image
                         src={url}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-32 object-cover rounded-lg"
+                        width={128}
+                        height={128}
                       />
                       <button
                         type="button"
@@ -334,10 +337,12 @@ export default function AdminProductsPage() {
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <img
+                      <Image
                         src={product.image_urls[0] || '/placeholder.png'}
                         alt={product.name}
                         className="h-10 w-10 rounded-full object-cover"
+                        width={40}
+                        height={40}
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -380,10 +385,12 @@ export default function AdminProductsPage() {
               {products.map((product) => (
                 <div key={product.id} className="border-b border-gray-200 p-4">
                   <div className="flex items-center space-x-4">
-                    <img
+                    <Image
                       src={product.image_urls[0] || '/placeholder.png'}
                       alt={product.name}
                       className="h-16 w-16 rounded-lg object-cover"
+                      width={64}
+                      height={64}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">

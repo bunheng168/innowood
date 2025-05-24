@@ -10,11 +10,10 @@ const supabase = createBrowserClient(
 export async function uploadProductImages(files: File[]): Promise<string[]> {
   const uploadPromises = files.map(async (file) => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name}`;
       const filePath = `products/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('innowood-image')
         .upload(filePath, file);
 
@@ -56,20 +55,16 @@ export async function addProduct(productData: Partial<Product>) {
 
 // Get all products
 export async function getProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
+  const { data: products, error } = await supabase
     .from('products')
-    .select(`
-      *,
-      category:categories(*)
-    `)
-    .order('created_at', { ascending: false });
+    .select('*, category:categories(*)');
 
   if (error) {
     console.error('Error fetching products:', error);
     return [];
   }
 
-  return data;
+  return products;
 }
 
 // Get a single product
@@ -189,58 +184,33 @@ export async function deleteCategory(id: string) {
 }
 
 // Get filtered products with pagination
-export async function getFilteredProducts(options: {
+export async function getFilteredProducts({ 
+  categoryId, 
+  page = 1, 
+  limit = 12 
+}: {
   categoryId?: string;
   page?: number;
   limit?: number;
-} = {}): Promise<{
-  products: Product[];
-  total: number;
-}> {
-  const { categoryId, page = 1, limit = 12 } = options;
-  const offset = (page - 1) * limit;
+}) {
+  const start = (page - 1) * limit;
+  const end = start + limit - 1;
 
-  try {
-    // First get the count
-    const countQuery = supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true });
+  let query = supabase
+    .from('products')
+    .select('*, category:categories(*)', { count: 'exact' })
+    .range(start, end);
 
-    // Apply category filter if provided
-    if (categoryId) {
-      countQuery.eq('category_id', categoryId);
-    }
+  if (categoryId) {
+    query = query.eq('category_id', categoryId);
+  }
 
-    // Then get the actual data
-    let dataQuery = supabase
-      .from('products')
-      .select('*, category:categories(*)');
+  const { data: products, count, error } = await query;
 
-    // Apply same category filter if provided
-    if (categoryId) {
-      dataQuery = dataQuery.eq('category_id', categoryId);
-    }
-
-    // Add pagination
-    dataQuery = dataQuery
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    // Execute both queries
-    const [countResult, dataResult] = await Promise.all([
-      countQuery,
-      dataQuery
-    ]);
-
-    if (dataResult.error) throw dataResult.error;
-    if (countResult.error) throw countResult.error;
-
-    return {
-      products: dataResult.data || [],
-      total: countResult.count || 0
-    };
-  } catch (error) {
+  if (error) {
     console.error('Error fetching products:', error);
     return { products: [], total: 0 };
   }
+
+  return { products: products || [], total: count || 0 };
 } 

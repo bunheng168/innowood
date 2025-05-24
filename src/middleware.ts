@@ -5,6 +5,15 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   
+  // Skip middleware for public assets and api routes
+  if (
+    req.nextUrl.pathname.startsWith('/_next') ||
+    req.nextUrl.pathname.startsWith('/api') ||
+    req.nextUrl.pathname.startsWith('/static')
+  ) {
+    return res;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -35,17 +44,15 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If there's no session and the user is trying to access admin routes
-  if (!session && req.nextUrl.pathname.startsWith('/admin')) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/admin/login';
+  // If there's no session and trying to access admin routes (except login)
+  if (!session && req.nextUrl.pathname.startsWith('/admin') && req.nextUrl.pathname !== '/admin/login') {
+    const redirectUrl = new URL('/admin/login', req.url);
     return NextResponse.redirect(redirectUrl);
   }
 
-  // If there's a session and the user is on the login page
+  // If there's a session and on the login page
   if (session && req.nextUrl.pathname === '/admin/login') {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/admin/products';
+    const redirectUrl = new URL('/admin/products', req.url);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -53,5 +60,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }; 

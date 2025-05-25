@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Product } from '@/types/product';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

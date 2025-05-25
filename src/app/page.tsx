@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
-import Image from 'next/image';
 import { Product, Category } from '@/types/product';
 import { getFilteredProducts, getCategories } from '@/lib/supabaseUtils';
 import { supabase } from '@/lib/supabaseClient';
@@ -31,14 +30,12 @@ export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [customization, setCustomization] = useState<CustomizationOptions>({
     text: '',
     quantity: 1,
     attachedImage: null,
     attachedImagePreview: ''
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const productsPerPage = 12;
 

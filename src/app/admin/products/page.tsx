@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Product, Category } from '@/types/product';
 import { getProducts, deleteProduct, uploadProductImages, addProduct, updateProduct, getCategories } from '@/lib/supabaseUtils';
 import Image from 'next/image';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -167,7 +169,7 @@ export default function AdminProductsPage() {
               onClick={handleCancelEdit}
               className="text-gray-600 hover:text-gray-800"
             >
-              ✕
+              <FontAwesomeIcon icon={faTimes} />
             </button>
           </div>
           
@@ -280,7 +282,7 @@ export default function AdminProductsPage() {
                         }}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
                       >
-                        ×
+                        <FontAwesomeIcon icon={faTimes} />
                       </button>
                     </div>
                   ))}

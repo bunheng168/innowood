@@ -181,13 +181,6 @@ Product Image: ${selectedProduct.image_urls[0] || ''}${
     setLoading(false);
   };
 
-  const handleQuantityChange = (increment: boolean) => {
-    setCustomization(prev => ({
-      ...prev,
-      quantity: increment ? prev.quantity + 1 : Math.max(1, prev.quantity - 1)
-    }));
-  };
-
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     // Scroll to top of the products section

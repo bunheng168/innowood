@@ -21,6 +21,14 @@ export default function ImagePreviewModal({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const handlePrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
   useEffect(() => {
     // Focus the modal div when it mounts
     if (modalRef.current) {
@@ -28,27 +36,19 @@ export default function ImagePreviewModal({
     }
 
     // Add global keyboard event listener
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') handlePrevious();
-      if (e.key === 'ArrowRight') handleNext();
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrevious();
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     // Cleanup
     return () => {
-      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []); // Empty dependency array since we want this to run once on mount
-
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  };
+  }, [onClose, handleNext, handlePrevious]);
 
   // Handle click outside to close
   const handleBackdropClick = (e: React.MouseEvent) => {

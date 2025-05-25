@@ -1,18 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 interface ImageSliderProps {
   images: string[];
   alt: string;
-  inStock: boolean;
+  inStock?: boolean;
   onImageClick?: (index: number) => void;
 }
 
-export default function ImageSlider({ images, alt, inStock, onImageClick }: ImageSliderProps) {
+export default function ImageSlider({ images, alt, inStock = true, onImageClick }: ImageSliderProps) {
   const handleImageClick = () => {
     if (onImageClick) {
       onImageClick(0);
